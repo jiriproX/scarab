@@ -1,0 +1,54 @@
+---
+- name: Ensuring the container running opendaylight is up
+  kolla_docker:
+    name: "opendaylight"
+    action: "get_container_state"
+  register: container_state
+  failed_when: container_state.Running == false
+  when:
+    - enable_opendaylight | bool
+    - inventory_hostname in groups['opendaylight']
+
+- include: config.yml
+
+- name: Check the configs for opendaylight
+  command: docker exec opendaylight /usr/local/bin/kolla_set_configs --check
+  changed_when: false
+  failed_when: false
+  register: opendaylight_check_result
+  when:
+    - inventory_hostname in groups['opendaylight']
+
+- name: Containers config strategy for opendaylight
+  kolla_docker:
+    name: "opendaylight"
+    action: "get_container_env"
+  register: opendaylight_envs
+  when:
+    - inventory_hostname in groups['opendaylight']
+
+- name: Remove the opendaylight container
+  kolla_docker:
+    name: "opendaylight"
+    action: "remove_container"
+  register: opendaylight_remove_containers
+  when:
+    - enable_opendaylight | bool
+    - inventory_hostname in groups['opendaylight']
+    - config_strategy == "COPY_ONCE"
+    - opendaylight_envs['KOLLA_CONFIG_STRATEGY'] == 'COPY_ONCE'
+    - opendaylight_check_result['rc'] == 1
+
+- include: start.yml
+  when: opendaylight_remove_containers.changed
+
+- name: Restart container running opendaylight
+  kolla_docker:
+    name: "opendaylight"
+    action: "restart_container"
+  when:
+    - enable_opendaylight | bool
+    - config_strategy == 'COPY_ALWAYS'
+    - inventory_hostname in groups['opendaylight']
+    - opendaylight_envs['KOLLA_CONFIG_STRATEGY'] == 'COPY_ONCE'
+    - opendaylight_check_result['rc'] == 1

@@ -1,0 +1,15 @@
+---
+- name: Starting opendaylight container
+  kolla_docker:
+    action: "start_container"
+    common_options: "{{ docker_common_options }}"
+    image: "{{ opendaylight_image_full }}"
+    name: "opendaylight"
+    privileged: True
+    volumes:
+      - "{{ node_config_directory }}/opendaylight/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "kolla_logs:/var/log/kolla/"
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - neutron_plugin_agent == "opendaylight"

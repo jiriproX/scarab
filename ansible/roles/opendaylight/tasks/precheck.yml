@@ -1,0 +1,56 @@
+---
+- name: Get container facts
+  kolla_container_facts:
+    name:
+      - opendaylight
+  register: container_facts
+
+- name: Checking free port for opendaylight_clustering
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
+    port: "{{ opendaylight_clustering_port }}"
+    connect_timeout: 1
+    state: stopped
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - container_facts['opendaylight'] is not defined
+
+- name: Checking free port for opendaylight_restconf
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
+    port: "{{ opendaylight_restconf_port }}"
+    connect_timeout: 1
+    state: stopped
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - container_facts['opendaylight'] is not defined
+
+- name: Checking free port for opendaylight_karaf_ssh
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
+    port: "{{ opendaylight_karaf_ssh_port }}"
+    connect_timeout: 1
+    state: stopped
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - container_facts['opendaylight'] is not defined
+
+- name: Checking free port for opendaylight_openflow
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
+    port: "{{ opendaylight_openflow_port }}"
+    connect_timeout: 1
+    state: stopped
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - container_facts['opendaylight'] is not defined
+
+- name: Checking free port for opendaylight_ovsdb
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
+    port: "{{ opendaylight_ovsdb_port }}"
+    connect_timeout: 1
+    state: stopped
+  when:
+    - inventory_hostname in groups['opendaylight']
+    - container_facts['opendaylight'] is not defined

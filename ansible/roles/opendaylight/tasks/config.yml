@@ -1,0 +1,103 @@
+---
+- name: Setting sysctl values
+  sysctl: name={{ item.name }} value={{ item.value }} sysctl_set=yes
+  with_items:
+    - { name: "net.bridge.bridge-nf-call-iptables", value: 1}
+    - { name: "net.bridge.bridge-nf-call-ip6tables", value: 1}
+    - { name: "net.ipv4.conf.all.rp_filter", value: 0}
+    - { name: "net.ipv4.conf.default.rp_filter", value: 0}
+  when:
+    - set_sysctl | bool
+    - inventory_hostname in groups['opendaylight']
+
+- name: Ensuring config directories exist
+  file:
+    path: "{{ node_config_directory }}/{{ item }}"
+    state: "directory"
+    recurse: yes
+  with_items:
+    - "opendaylight"
+
+- name: Copying over config.json files for services
+  template:
+    src: "{{ item }}.json.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/config.json"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over custom.properties
+  template:
+    src: "{{ role_path }}/templates/custom.properties.j2"
+    dest: "{{ node_config_directory }}/opendaylight/custom.properties"
+
+- name: Copying over jetty.xml
+  template:
+    src: "{{ role_path }}/templates/jetty.xml.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/jetty.xml"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over org.apache.karaf.features.cfg
+  template:
+    src: "{{ role_path }}/templates/org.apache.karaf.features.cfg.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/org.apache.karaf.features.cfg"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over tomcat-server.xml
+  template:
+    src: "{{ role_path }}/templates/tomcat-server.xml.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/tomcat-server.xml"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over org.ops4j.pax.logging.cfg.j2
+  template:
+    src: "{{ role_path }}/templates/org.ops4j.pax.logging.cfg.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/org.ops4j.pax.logging.cfg"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over netvirt-impl-config_netvirt-impl-config.xml
+  template:
+    src: "{{ role_path }}/templates/netvirt-impl-config_netvirt-impl-config.xml.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/netvirt-impl-config_netvirt-impl-config.xml"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over setenv
+  template:
+    src: "{{ role_path }}/templates/setenv.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/setenv"
+  with_items:
+    - "opendaylight"
+
+### Note (mgkwill): TODO: Need to figure out way 
+#   to have custom configs for hosts with json.
+#   Will comment out lines for now and use template module
+- name: Copying over akka.conf
+  template:
+    src: "{{ role_path }}/templates/akka.conf.j2"
+#      - "{{ node_custom_config }}/opendaylight/akka.conf"
+#      - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/akka.conf"
+    dest: "{{ node_config_directory }}/{{ item }}/akka.conf"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over modules.conf
+  template:
+    src: "{{ role_path }}/templates/modules.conf.j2"
+#      - "{{ node_custom_config }}/opendaylight/modules.conf"
+#      - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/modules.conf"
+    dest: "{{ node_config_directory }}/{{ item }}/modules.conf"
+  with_items:
+    - "opendaylight"
+
+- name: Copying over module-shards.conf
+  template:
+    src: "{{ role_path }}/templates/module-shards.conf.j2"
+#      - "{{ node_custom_config }}/opendaylight/module-shards.conf"
+#      - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/module-shards.conf"
+    dest: "{{ node_config_directory }}/{{ item }}/module-shards.conf"
+  with_items:
+    - "opendaylight"

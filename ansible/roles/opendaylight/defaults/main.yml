@@ -1,0 +1,10 @@
+---
+project_name: "opendaylight"
+
+####################
+# Docker
+####################
+
+opendaylight_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-opendaylight"
+opendaylight_tag: "{{ openstack_release }}"
+opendaylight_image_full: "{{ opendaylight_image }}:{{ opendaylight_tag }}"

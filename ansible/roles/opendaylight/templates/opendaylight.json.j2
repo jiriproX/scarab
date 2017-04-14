@@ -1,0 +1,78 @@
+{
+    "command": "/opt/opendaylight/bin/karaf",
+    "config_files": [
+        {
+            "source": "{{ container_config_directory }}/org.apache.karaf.features.cfg",
+            "dest": "/opt/opendaylight/etc/org.apache.karaf.features.cfg",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/org.opendaylight.ovsdb.library.cfg",
+            "dest": "/opt/opendaylight/etc/org.opendaylight.ovsdb.library.cfg",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/tomcat-server.xml",
+            "dest": "/opt/opendaylight/configuration/tomcat-server.xml",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/jetty.xml",
+            "dest": "/opt/opendaylight/etc/jetty.xml",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/org.ops4j.pax.logging.cfg",
+            "dest": "/opt/opendaylight/etc/org.ops4j.pax.logging.cfg",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "/var/lib/kolla/config_files/custom.properties",
+            "dest": "/opt/opendaylight/etc/custom.properties",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/netvirt-impl-config_netvirt-impl-config.xml",
+            "dest": "/opt/opendaylight/datastore/initial/config/netvirt-impl-config_netvirt-impl-config.xml",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/setenv",
+            "dest": "/opt/opendaylight/bin/setenv",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/akka.conf",
+            "dest": "/opt/opendaylight/configuration/initial/akka.conf",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/modules.conf",
+            "dest": "/opt/opendaylight/configuration/initial/modules.conf",
+            "owner": "opendaylight",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/module-shards.conf",
+            "dest": "/opt/opendaylight/configuration/initial/module-shards.conf",
+            "owner": "opendaylight",
+            "perm": "0600"
+        }
+    ],
+    "permissions": [
+        {
+            "path": "/var/log/kolla/opendaylight",
+            "owner": "opendaylight:opendaylight",
+            "recurse": true
+        }
+    ]
+}
