@@ -44,6 +44,13 @@
   with_items:
     - "opendaylight"
 
+- name: Copying over org.opendaylight.ovsdb.library.cfg.j2
+  template:
+    src: "{{ role_path }}/templates/org.opendaylight.ovsdb.library.cfg.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/org.opendaylight.ovsdb.library.cfg"
+  with_items:
+    - "opendaylight"
+
 - name: Copying over tomcat-server.xml
   template:
     src: "{{ role_path }}/templates/tomcat-server.xml.j2"
