@@ -1,0 +1,75 @@
+---
+####################
+# Services
+####################
+
+ovs_services:
+  openvswitch-db-server:
+    container_name: "openvswitch_db"
+    image: "{{ openvswitch_db_image_full }}"
+    enabled: "{{ neutron_plugin_agent == 'openvswitch' }}"
+    host_in_groups: >-
+      {{
+      inventory_hostname in groups['compute']
+      or (enable_manila | bool and inventory_hostname in groups['manila-share'])
+      or inventory_hostname in groups['neutron-dhcp-agent']
+      or inventory_hostname in groups['neutron-l3-agent']
+      or inventory_hostname in groups['neutron-metadata-agent']
+      or inventory_hostname in groups['neutron-vpnaas-agent']
+      }}
+    volumes:
+      - "{{ node_config_directory }}/openvswitch-db-server/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/run:/run:shared"
+      - "kolla_logs:/var/log/kolla/"
+      - "openvswitch_db:/var/lib/openvswitch/"
+  openvswitch-vswitchd:
+    container_name: "openvswitch_vswitchd"
+    image: "{{ openvswitch_vswitchd_image_full }}"
+    enabled: "{{ neutron_plugin_agent == 'openvswitch' }}"
+    host_in_groups: >-
+      {{
+      inventory_hostname in groups['compute']
+      or (enable_manila | bool and inventory_hostname in groups['manila-share'])
+      or inventory_hostname in groups['neutron-dhcp-agent']
+      or inventory_hostname in groups['neutron-l3-agent']
+      or inventory_hostname in groups['neutron-metadata-agent']
+      or inventory_hostname in groups['neutron-vpnaas-agent']
+      }}
+    privileged: True
+    volumes:
+      - "{{ node_config_directory }}/openvswitch-vswitchd/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/lib/modules:/lib/modules:ro"
+      - "/run:/run:shared"
+      - "/dev:/dev:shared"
+      - "kolla_logs:/var/log/kolla/"
+
+####################
+# OVS
+####################
+ovs_datapath: "netdev"
+ovs_bridge_mappings: "{% for bridge in neutron_bridge_name.split(',') %}physnet{{ loop.index0 + 1 }}:{{ bridge }}{% if not loop.last %},{% endif %}{% endfor %}"
+ovs_port_mappings: "{% for bridge in neutron_bridge_name.split(',') %}  {{ neutron_external_interface.split(',')[loop.index0] }}:{{ bridge }}{% if not loop.last %},{% endif %}{% endfor %}"
+ovs_cidr_mappings: "{% if  neutron_bridge_name.split(',')|length != 1 %} {neutron_bridge_name.split(',')[0]}:{{ tunnel_interface_cidr }} {% else %} {{ neutron_bridge_name }}:{{ tunnel_interface_cidr }} {% endif %}"
+ovs_mem_channels: 4
+ovs_socket_mem: 1024
+ovs_hugepage_mountpoint: /dev/hugepages
+
+# ovs <2.7 required dpdk phyical port names to be index
+# in pci adress order as dpdkX where X is the index
+# ovs>=2.7 allows arbitray names but the pci adress
+# must be set in a new dpdkdev-opt field
+# valid values are indexed or named.
+ovs_physical_port_policy: indexed
+
+####################
+# Docker
+####################
+openvswitch_db_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-openvswitch-db-server"
+openvswitch_db_tag: "{{ openstack_release }}"
+openvswitch_db_image_full: "{{ openvswitch_db_image }}:{{ openvswitch_db_tag }}"
+
+openvswitch_vswitchd_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-openvswitch-vswitchd"
+openvswitch_vswitchd_tag: "{{ openstack_release }}"
+openvswitch_vswitchd_image_full: "{{ openvswitch_vswitchd_image }}:{{ openvswitch_vswitchd_tag }}"

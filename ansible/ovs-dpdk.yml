@@ -1,0 +1,54 @@
+---
+- name: Gather facts for all hosts
+  hosts: all
+  serial: '{{ serial|default("0") }}'
+  gather_facts: false
+  tasks:
+    - setup:
+      when:
+        - (play_hosts | length) == (groups['all'] | length)
+
+- name: Gather facts for all hosts (if using --limit)
+  hosts: all
+  serial: '{{ serial|default("0") }}'
+  gather_facts: false
+  tasks:
+    - setup:
+      delegate_facts: True
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['all'] }}"
+      when:
+        - (play_hosts | length) != (groups['all'] | length)
+
+- name: Detect openstack_release variable
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Get current kolla-ansible version number
+      local_action: command python -c "import pbr.version; print(pbr.version.VersionInfo('kolla-ansible'))"
+      register: kolla_ansible_version
+      changed_when: false
+      when: openstack_release == "auto"
+
+    - name: Set openstack_release variable
+      set_fact:
+        openstack_release: "{{ kolla_ansible_version.stdout }}"
+      when: openstack_release == "auto"
+      tags: always
+
+- name: Apply role ovs-dpdk
+  gather_facts: false
+  hosts:
+    - neutron-server
+    - neutron-dhcp-agent
+    - neutron-l3-agent
+    - neutron-lbaas-agent
+    - neutron-metadata-agent
+    - neutron-vpnaas-agent
+    - compute
+    - manila-share
+  serial: '{{ serial|default("0") }}'
+  roles:
+    - { role: ovs-dpdk,
+        tags: ovs}
+
