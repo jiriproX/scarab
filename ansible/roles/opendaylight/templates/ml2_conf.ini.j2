@@ -1,0 +1,52 @@
+# ml2_conf.ini
+[ml2]
+# Changing type_drivers after bootstrap can lead to database inconsistencies
+type_drivers = flat,vlan,vxlan
+tenant_network_types = vxlan
+
+{% if neutron_plugin_agent == "openvswitch" %}
+mechanism_drivers = openvswitch,l2population
+{% elif neutron_plugin_agent == "opendaylight" %}
+mechanism_drivers = logger,{{ opendaylight_mechanism_driver }}
+{% endif %}
+
+extension_drivers = {{ neutron_extension_drivers }}
+
+{% if enable_opendaylight | bool %}
+[ml2_odl]
+url = {{ internal_protocol }}://{{ opendaylight_leader_ip_address }}:{{ opendaylight_restconf_port }}/controller/nb/v2/neutron
+username=admin
+password={{ opendaylight_password }}
+port_binding_controller=network-topology
+{% endif %}
+
+[ml2_type_vlan]
+network_vlan_ranges =
+
+[ml2_type_flat]
+flat_networks = {% for bridge in neutron_bridge_name.split(',') %}physnet{{ loop.index0 + 1 }}{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[ml2_type_vxlan]
+vni_ranges = 1:1000
+vxlan_group = 239.1.1.1
+
+[securitygroup]
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+
+[agent]
+tunnel_types = vxlan
+l2_population = true
+arp_responder = true
+
+{% if enable_neutron_dvr | bool %}
+enable_distributed_routing = True
+{% endif %}
+
+{% if enable_neutron_qos | bool %}
+extensions = qos
+{% endif %}
+
+[ovs]
+ovsdb_connection = tcp:{{ api_interface_address }}:6640
+local_ip = {{ tunnel_interface_address }}
