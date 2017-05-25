@@ -45,7 +45,8 @@ connection.scheme = ANY_CONTROLLER_ONE_MASTER
 
 # OVSDB configuration
 # ovsdb plugin supports both active and passive connections. It listens on port 6640 by default for Active connections.
-ovsdb.listenPort=6640
+## Below line is depricated - use org.opendaylight.ovsdb.library.cfg to set OVSDB port etc.
+ovsdb.listenPort={{ opendaylight_ovsdb_port }}
 
 # ovsdb creates Openflow nodes/bridges. This configuration configures the bridge's Openflow version.
 # default Openflow version = 1.0, we also support 1.3.

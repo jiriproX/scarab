@@ -1,8 +1,5 @@
 ---
 - include: config.yml
-  when: inventory_hostname in groups['network']
-        or inventory_hostname in groups['opendaylight']
 
-- include: start.yml
-  when: inventory_hostname in groups['network']
-        or inventory_hostname in groups['opendaylight']
+- name: Flush Handlers
+  meta: flush_handlers

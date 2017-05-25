@@ -37,7 +37,7 @@ DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
                     <Property name="jetty.host" />
                 </Set>
                 <Set name="port">
-                    <Property name="jetty.port" default="8181" />
+                    <Property name="jetty.port" default="{{ opendaylight_restconf_port }}" />
                 </Set>
                 <Set name="maxIdleTime">300000</Set>
                 <Set name="Acceptors">2</Set>
@@ -55,7 +55,7 @@ DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
             <Property name="jetty.host" />
           </Set>
           <Set name="port">
-            <Property name="jetty.port" default="8080" />
+            <Property name="jetty.port" default="{{ opendaylight_restconf_port_backup }}" />
           </Set>
           <Set name="maxIdleTime">300000</Set>
           <Set name="Acceptors">2</Set>

@@ -1,6 +1,19 @@
 ---
 project_name: "opendaylight"
 
+opendaylight_services:
+  opendaylight:
+    container_name: "opendaylight"
+    image: "{{ opendaylight_image_full }}"
+    enabled: True
+    privileged: True
+    group: "opendaylight"
+    host_in_groups: "{{ True if orchestration_engine == 'KUBERNETES' else inventory_hostname in groups['opendaylight'] }}"
+    volumes:
+      - "{{ node_config_directory }}/opendaylight/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "kolla_logs:/var/log/kolla/"
+
 ####################
 # Docker
 ####################

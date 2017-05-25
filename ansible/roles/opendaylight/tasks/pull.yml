@@ -3,5 +3,8 @@
   kolla_docker:
     action: "pull_image"
     common_options: "{{ docker_common_options }}"
-    image: "{{ opendaylight_image_full }}"
-  when: inventory_hostname in groups['opendaylight']
+    image: "{{ item.value.image }}"
+  when:
+    - item.value.enabled | bool
+    - item.value.host_in_groups | bool
+  with_dict: "{{ opendaylight_services }}"
