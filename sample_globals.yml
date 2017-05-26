@@ -54,6 +54,7 @@ enable_opendaylight_qos: "no"
 enable_opendaylight_legacy_netvirt_conntrack: "no"
 opendaylight_leader_ip_address: ""
 opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack,odl-dlux-core"
+#neutron_generated_config_dir: "/etc/kolla/config"
 
 
 ####################
