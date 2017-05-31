@@ -85,6 +85,7 @@ ovsdb_port: "6640"
 
 opendaylight_clustering_port: "2550"
 opendaylight_restconf_port: "8181"
+opendaylight_restconf_port_backup: "8081"
 opendaylight_karaf_ssh_port: "8101"
 opendaylight_openflow_port: "6653"
 opendaylight_ovsdb_port: "6641"
@@ -102,11 +103,15 @@ enable_ovsdpdk: "yes"
 # Clean images options are specified here
 enable_destroy_images: "no"
 
+enable_manila: "no"
+
 ##################
 # Neutron options
 ##################
 neutron_bgp_router_id: "1.1.1.1"
 neutron_bridge_name: "br-ex"
+enable_neutron_dvr: "no"
+enable_neutron_qos: "no"
 
 #######################
 # OpenDaylight Options

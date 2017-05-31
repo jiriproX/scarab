@@ -2,7 +2,7 @@
 - name: Restart openvswitch-db-server container
   vars:
     service_name: "openvswitch-db-server"
-    service: "{{ ovs_services[service_name] }}"
+    service: "{{ openvswitch_services[service_name] }}"
     config_json: "{{ ovs_config_jsons.results|selectattr('item.key', 'equalto', service_name)|first }}"
     openvswitch_db_container: "{{ check_ovs_containers.results|selectattr('item.key', 'equalto', service_name)|first }}"
   kolla_docker:
@@ -26,7 +26,7 @@
 - name: Waiting the ovs db service to be ready
   vars:
     service_name: "openvswitch-db-server"
-    service: "{{ ovs_services[service_name] }}"
+    service: "{{ openvswitch_services[service_name] }}"
   command: docker exec "{{ service.container_name }}" ovs-vsctl --no-wait show
   register: check_result
   until: check_result | success
@@ -38,7 +38,7 @@
 - name: Ensuring ovsdpdk bridges are properly setup indexed
   vars:
     service_name: "openvswitch-db-server"
-    service: "{{ ovs_services[service_name] }}"
+    service: "{{ openvswitch_services[service_name] }}"
   command: "docker exec -e \"CONFIG_FILE={{ container_config_directory }}/ovs-dpdkctl.conf\" {{ service.container_name }} {{ container_config_directory }}/ovs-dpdkctl.sh init"
   register: status
   changed_when: status.stdout.find('changed') != -1
@@ -54,7 +54,7 @@
 - name: Restart openvswitch-vswitchd container
   vars:
     service_name: "openvswitch-vswitchd"
-    service: "{{ ovs_services[service_name] }}"
+    service: "{{ openvswitch_services[service_name] }}"
     config_json: "{{ ovs_config_jsons.results|selectattr('item.key', 'equalto', service_name)|first }}"
     openvswitch_vswitchd_container: "{{ check_ovs_containers.results|selectattr('item.key', 'equalto', service_name)|first }}"
   kolla_docker:

@@ -39,6 +39,10 @@ neutron_external_interface: "eth1"
 neutron_plugin_agent: "opendaylight"
 neutron_extension_drivers: ""
 ovs_datapath: "netdev"
+enable_neutron_dvr: "no"
+enable_neutron_qos: "no"
+api_interface_address: ""
+tunnel_interface_cidr: ""
 
 #############
 # Keepalived
