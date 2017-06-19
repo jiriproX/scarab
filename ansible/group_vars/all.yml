@@ -123,3 +123,13 @@ enable_opendaylight_qos: "no"
 enable_opendaylight_legacy_netvirt_conntrack: "no"
 opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack"
 neutron_generated_config_dir: "{{ playbook_dir }}/generated-config/"
+
+###################
+# OVS-DPDK Options
+###################
+pmd-cpu-mask: "0x2"
+ovs_coremask: "0x1"
+ovs_mem_channels: ""
+ovs_socket_mem: ""
+hugepage_mountpoint: ""
+pci_whitelist: ""

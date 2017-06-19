@@ -140,7 +140,7 @@
     service_name: "{{ item }}"
   template:
     src: "{{ role_path }}/templates/ml2_conf.ini.j2"
-    dest: "{{ playbook_dir }}/generated-config/neutron/{{ item }}/ml2_conf.ini"
+    dest: "{{ node_custom_config }}/neutron/{{ item }}/ml2_conf.ini"
   with_items:
     - "neutron-server"
     - "neutron-dhcp-agent"
@@ -151,4 +151,4 @@
     service_name: "neutron-dhcp-agent"
   template:
     src: "{{ role_path }}/templates/dhcp_agent.ini.j2"
-    dest: "{{ playbook_dir }}/generated-config/neutron/neutron-dhcp-agent/dhcp_agent.ini"
+    dest: "{{ node_custom_config }}/neutron/neutron-dhcp-agent/dhcp_agent.ini"

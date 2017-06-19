@@ -1,11 +1,17 @@
 {% if enable_opendaylight | bool %}
-/usr/bin/ovs-vsctl --no-wait -- set-manager ptcp:{{ ovsdb_port }}:{{ hostvars[inventory_hostname]['ansible_' + hostvars[inventory_hostname]['api_interface']]['ipv4']['address'] }} tcp:{{ opendaylight_leader_ip_address }}:{{ opendaylight_ovsdb_port }}
+/usr/bin/ovs-vsctl --no-wait -- set-manager ptcp:{{ ovsdb_port }}:{{ kolla_internal_vip_address }} tcp:{{ opendaylight_leader_ip_address }}:{{ opendaylight_ovsdb_port }}
 /usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . other_config:local_ip={{ hostvars[inventory_hostname]['ansible_' + hostvars[inventory_hostname]['api_interface']]['ipv4']['address'] }}
-/usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . external-ids:system-id=`cat /proc/sys/kernel/random/uuid`
-/usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . external_ids:odl_os_hostconfig_config_odl_l2='{"supported_vnic_types": [{"vnic_type": "normal", "vif_type": "ovs", "vif_details": {} }], "allowed_network_types": ["local", "vlan", "vxlan"], "datapath_types": ["netdev", "system"], "bridge_mappings": {"physnet1":"br-ex"} }'
-/usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . external_ids:odl_os_hostconfig_hostid="{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+/usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . external-ids:system-id=`cat /proc/sys/kernel/random/uuid` \
+  external_ids:odl_os_hostconfig_config_odl_l2='{"supported_vnic_types": [{"vnic_type": "normal", "vif_type": "ovs", "vif_details": {} }], "allowed_network_types": ["local", "vlan", "vxlan"], "datapath_types": ["netdev", "system"], "bridge_mappings": {"physnet1":"br-ex"} }' \
+  external_ids:odl_os_hostconfig_hostid="{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
 {% endif %}
 {% if enable_ovsdpdk | bool %}
-/usr/bin/ovs-vsctl --no-wait -- set Open_vSwitch . other_config:dpdk-init=true
+/usr/bin/ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask="{{ pmd_coremask }}" \
+  other_config:dpdk-init=True
+  other_config:dpdk-lcore-mask="{{ ovs_coremask }}" \
+  other_config:dpdk-mem-channels="{{ ovs_mem_channels }}" \
+  other_config:dpdk-socket-mem="{{ ovs_socket_mem }}" \
+  other_config:dpdk-hugepage-dir="{{ hugepage_mountpoint }}"  \
+  other_config:dpdk-extra=" --proc-type primary {{ pci_whitelist }} "
 {% endif %}
 /usr/sbin/ovs-vswitchd unix:/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info --mlockall --log-file=/var/log/kolla/openvswitch/ovs-vswitchd.log
