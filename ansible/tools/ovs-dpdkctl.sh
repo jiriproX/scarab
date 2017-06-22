@@ -6,7 +6,7 @@ if [[ "${OVS_DPDK_CTL_DEBUG}" == "True" ]]; then
 fi
 
 FULL_PATH=$(realpath "${BASH_SOURCE[0]}")
-CONFIG_FILE=${CONFIG_FILE:-"/etc/default/ovs-dpdk.conf"}
+CONFIG_FILE=${CONFIG_FILE:-"/etc/default/ovs-dpdkctl.conf"}
 SERVICE_FILE="/etc/systemd/system/ovs-dpdkctl.service"
 
 function get_value {
@@ -41,7 +41,7 @@ function generate_pciwhitelist {
     local _Whitelist=''
     for nic in $(list_dpdk_nics); do
         address="$(get_value $nic address)"
-        if [ "$_Whitelist" == '' ]; then
+        if [[ "$_Whitelist" == '' ]]; then
             _Whitelist="-w $address"
         else
             _Whitelist="$_Whitelist -w $address"
@@ -90,18 +90,16 @@ function gen_config {
         set_value $nic driver ${dpdk_interface_driver:-"uio_pci_generic"}
     done
     set_value ovs pci_whitelist "'${pci_whitelist:-$(generate_pciwhitelist)}'"
-
 }
 
 function bind_nic {
-    echo $1 > /sys/bus/pci/drivers/$2/bind
     echo $2 > /sys/bus/pci/devices/$1/driver_override
+    echo $1 > /sys/bus/pci/drivers/$2/bind
 }
 
 function unbind_nic {
     echo $1 > /sys/bus/pci/drivers/$2/unbind
     echo > /sys/bus/pci/devices/$1/driver_override
-
 }
 
 function list_dpdk_nics {
@@ -171,7 +169,8 @@ function init_ovs_db {
 
 function init_ovs_bridges {
     raw_bridge_mappings=$(get_value ovs bridge_mappings)
-    bridge_mappings=( ${raw_bridge_mappings//,/ } )
+    raw_port_mappings=$(get_value ovs port_mappings)
+    bridge_mappings=( ${raw_bridge_mappings//,/ } ${raw_port_mappings//,/ } )
     for pair in "${bridge_mappings[@]}"; do
         bridge=`echo $pair | cut -f 2 -d ":"`
         sudo ovs-vsctl --no-wait -- --may-exist add-br $bridge -- set Bridge $bridge datapath_type=netdev
@@ -212,6 +211,29 @@ function init {
     init_ovs_db
     init_ovs_bridges
     init_ovs_interfaces
+}
+
+function start_service {
+    bind_nics
+    not_done=true
+    while [ "$not_done" = true ] ; do
+        not_done=false
+        local raw_cidr_mappings=$(get_value ovs cidr_mappings)
+        local cidr_mappings=( ${raw_cidr_mappings//,/ } )
+        for pair in "${cidr_mappings[@]}"; do
+            local bridge=`echo $pair | cut -f 1 -d ":"`
+            local cidr=`echo $pair | cut -f 2 -d ":"`
+            if [ $(ip link | grep -c $bridge) -ne 0 ]; then
+                ip link set up $bridge
+                if [ $(ip address | grep -c $cidr) -eq 0 ]; then
+                    ip address add $cidr dev $bridge
+                fi
+            else
+                not_done=true
+                sleep 5
+            fi
+        done
+    done
 }
 
 function install_network_manager_conf {
@@ -262,9 +284,9 @@ After=syslog.target
 # Uncomment to enable debug logging.
 # Environment=OVS_DPDK_CTL_DEBUG=True
 Environment=CONFIG_FILE=$CONFIG_FILE
-Type=oneshot
+Type=simple
 RemainAfterExit=yes
-ExecStart=/bin/ovs-dpdkctl bind_nics
+ExecStart=/bin/ovs-dpdkctl start_service
 ExecStop=/bin/ovs-dpdkctl unbind_nics
 
 [Install]
@@ -293,7 +315,7 @@ function install {
         gen_config
     fi
     systemctl start ovs-dpdkctl
-    install_network_manager_conf
+#    install_network_manager_conf
 }
 
 function uninstall {
