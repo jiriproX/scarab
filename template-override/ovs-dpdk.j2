@@ -103,6 +103,6 @@ RUN ./boot.sh && \
 
 {% block openvswitch_vswitchd_footer %}
 
-RUN echo "chmod 777 /var/run/openvswitch" > /usr/local/bin/kolla_openvswitch_extend_start
+RUN echo "chmod 777 /var/run/openvswitch" >> /usr/local/bin/kolla_openvswitch_extend_start
 
 {% endblock %}
